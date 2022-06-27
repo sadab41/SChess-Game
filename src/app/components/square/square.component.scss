@@ -1,4 +1,22 @@
+@use "main";
+
 :host > div {
   width: 64px;
   height: 64px;
+
+  &.white {
+    background-color: main.$light;
+
+    &.selected {
+      background-color: main.$light-selected;
+    }
+  }
+
+  &.black {
+    background-color: main.$dark;
+
+    &.selected {
+      background-color: main.$dark-selected;
+    }
+  }
 }
