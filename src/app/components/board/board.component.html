@@ -1,1 +1,9 @@
-<p>board works!</p>
+<div class="board">
+  <ng-container *ngFor="let rank of boardDirectionArray">
+    <ng-container *ngFor="let file of boardDirectionArray">
+
+      <jv-square [rank]="rank" [file]="file"></jv-square>
+
+    </ng-container>
+  </ng-container>
+</div>

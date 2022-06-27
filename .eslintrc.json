@@ -36,6 +36,16 @@
           }
         ],
         "@typescript-eslint/explicit-function-return-type": "error",
+        "comma-dangle": [
+          "error",
+          "always-multiline"
+        ],
+        "max-len": [
+          "error",
+          {
+            "code": 80
+          }
+        ],
         "padded-blocks": [
           "error",
           "never"
