@@ -17,6 +17,7 @@ export class SquareComponent implements OnInit {
 
   square!: [Pieces, Colors];
   isActive!: boolean;
+  isSelected!: boolean;
 
   constructor(private gameService: GameService) {
   }
@@ -36,6 +37,16 @@ export class SquareComponent implements OnInit {
       this.gameService.activeColor$,
     ])
       .subscribe(([[, color], active]) => this.isActive = color === active);
+
+    this.gameService.selectedSquare$
+      .subscribe(value => {
+        if (!value) {
+          this.isSelected = false;
+        } else {
+          this.isSelected = value.rank === this.rank
+            && value.file === this.file;
+        }
+      })
   }
 
   get imgSrc(): string | null {
@@ -57,5 +68,9 @@ export class SquareComponent implements OnInit {
     const [piece, color] = this.square;
 
     return `${piece} ${color}`;
+  }
+
+  onSquareClick(): void {
+    this.gameService.selectSquare(this.rank, this.file);
   }
 }

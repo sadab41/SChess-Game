@@ -46,6 +46,28 @@
             "code": 80
           }
         ],
+        "multiline-ternary": [
+          "error",
+          "always-multiline"
+        ],
+        "no-extra-boolean-cast": "off",
+        "no-extra-parens": "off",
+        "no-fallthrough": "error",
+        "no-irregular-whitespace": "error",
+        "no-lonely-if": "error",
+        "no-multi-spaces": "error",
+        "no-multiple-empty-lines": [
+          "error",
+          {
+            "max": 1
+          }
+        ],
+        "no-nested-ternary": "error",
+        "no-unneeded-ternary": "error",
+        "operator-linebreak": [
+          "error",
+          "before"
+        ],
         "padded-blocks": [
           "error",
           "never"
@@ -57,7 +79,19 @@
             "prev": "*",
             "next": "return"
           }
-        ]
+        ],
+        "prefer-arrow-callback": "error",
+        "prefer-const": "error",
+        "prefer-destructuring": [
+          "error",
+          {
+            "object": true,
+            "array": false
+          }
+        ],
+        "prefer-object-spread": "error",
+        "prefer-spread": "error",
+        "prefer-template": "error"
       }
     },
     {

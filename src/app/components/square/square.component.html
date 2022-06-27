@@ -1,5 +1,7 @@
 <div class="square"
-     [ngClass]="({ rank, file } | squareColor).toLowerCase()">
+     [ngClass]="({ rank, file } | squareColor).toLowerCase()"
+     [class.selected]="isSelected"
+     (click)="onSquareClick()">
 
   <div class="square-piece"
        [class.selectable]="isActive"

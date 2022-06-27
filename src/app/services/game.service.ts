@@ -19,6 +19,32 @@ export class GameService {
       .pipe(pluck('active'));
   }
 
+  get selectedSquare$()
+    : Observable<{ rank: number, file: number } | null | undefined> {
+    return this.gameStateSubject.asObservable()
+      .pipe(pluck('selectedSquare'));
+  }
+
+  selectSquare(rank: number, file: number): void {
+    const { board, active } = this.gameStateSubject.value;
+    const squareNum = squareNumber(rank, file);
+
+    let square: { rank: number, file: number } | null = null;
+
+    if (board.has(squareNum)) {
+      const color = board.get(squareNum)?.[1];
+
+      if (active === color) {
+        square = { rank, file };
+      }
+    }
+
+    this.gameStateSubject.next({
+      ...this.gameStateSubject.value,
+      selectedSquare: square,
+    });
+  }
+
   getPieceInSquare$(square: number): Observable<[Pieces, Colors] | undefined>;
   getPieceInSquare$(rank: number, file: number)
     : Observable<[Pieces, Colors] | undefined>;
