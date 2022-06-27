@@ -1,3 +1,6 @@
 <div [ngClass]="({ rank, file } | squareColor).toLowerCase()">
-
+  <img *ngIf="!!square"
+       [src]='imgSrc'
+       [alt]='imgAlt'
+       draggable='false'>
 </div>
