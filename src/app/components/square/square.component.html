@@ -1,6 +1,12 @@
-<div [ngClass]="({ rank, file } | squareColor).toLowerCase()">
-  <img *ngIf="!!square"
-       [src]='imgSrc'
-       [alt]='imgAlt'
-       draggable='false'>
+<div class="square"
+     [ngClass]="({ rank, file } | squareColor).toLowerCase()">
+
+  <div class="square-piece"
+       [class.selectable]="isActive"
+       *ngIf="!!square">
+    <img [src]='imgSrc'
+         [alt]='imgAlt'
+         draggable='false'>
+  </div>
+
 </div>

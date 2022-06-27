@@ -1,6 +1,6 @@
 import { Component, Input, OnInit } from '@angular/core';
 
-import { filter } from 'rxjs';
+import { combineLatest, filter, shareReplay } from 'rxjs';
 
 import { GameService } from '../../services/game.service';
 import { Colors } from '../../models/colors.enum';
@@ -16,14 +16,26 @@ export class SquareComponent implements OnInit {
   @Input() file!: number;
 
   square!: [Pieces, Colors];
+  isActive!: boolean;
 
   constructor(private gameService: GameService) {
   }
 
   ngOnInit(): void {
-    this.gameService.getPieceInSquare$(this.rank, this.file)
-      .pipe(filter(Boolean))
+    const piece$ = this.gameService.getPieceInSquare$(this.rank, this.file)
+      .pipe(
+        filter(Boolean),
+        shareReplay(),
+      );
+
+    piece$
       .subscribe(square => this.square = square);
+
+    combineLatest([
+      piece$,
+      this.gameService.activeColor$,
+    ])
+      .subscribe(([[, color], active]) => this.isActive = color === active);
   }
 
   get imgSrc(): string | null {

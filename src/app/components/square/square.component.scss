@@ -1,6 +1,6 @@
 @use "main";
 
-:host > div {
+.square {
   width: 64px;
   height: 64px;
 
@@ -21,6 +21,19 @@
 
     &.selected {
       background-color: main.$dark-selected;
+    }
+  }
+
+  > .square-piece {
+    width: 100%;
+    height: 100%;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    &.selectable {
+      cursor: pointer;
     }
   }
 }

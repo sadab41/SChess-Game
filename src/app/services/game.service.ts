@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 
-import { BehaviorSubject, map, Observable } from 'rxjs';
+import { BehaviorSubject, map, Observable, pluck } from 'rxjs';
 
 import { GameState } from '../models/game-state.model';
 import { Colors } from '../models/colors.enum';
@@ -13,6 +13,11 @@ export class GameService {
     board: boardInitialPosition,
     active: Colors.White,
   });
+
+  get activeColor$(): Observable<Colors> {
+    return this.gameStateSubject.asObservable()
+      .pipe(pluck('active'));
+  }
 
   getPieceInSquare$(square: number): Observable<[Pieces, Colors] | undefined>;
   getPieceInSquare$(rank: number, file: number)
