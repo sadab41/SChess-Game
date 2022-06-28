@@ -5,6 +5,8 @@ import { combineLatest, filter, shareReplay } from 'rxjs';
 import { GameService } from '../../services/game.service';
 import { Colors } from '../../models/colors.enum';
 import { Pieces } from '../../models/pieces.enum';
+import { MoveActions } from '../../models/move.model';
+import { squareNumber } from '../../utils/board';
 
 @Component({
   selector: 'jv-square',
@@ -18,6 +20,9 @@ export class SquareComponent implements OnInit {
   square!: [Pieces, Colors];
   isActive!: boolean;
   isSelected!: boolean;
+  squareAction!: MoveActions | undefined;
+
+  readonly moveActionsEnum = MoveActions;
 
   constructor(private gameService: GameService) {
   }
@@ -46,7 +51,21 @@ export class SquareComponent implements OnInit {
           this.isSelected = value.rank === this.rank
             && value.file === this.file;
         }
-      })
+      });
+
+    this.gameService.availableMoves$
+      .subscribe(moves => {
+        const move = moves
+          .find(move => move.square === squareNumber(this.rank, this.file));
+
+        this.squareAction = move?.action;
+      });
+  }
+
+  get isSelectable(): boolean {
+    return this.isActive
+      || this.squareAction === MoveActions.Capture
+      || this.squareAction === MoveActions.Move;
   }
 
   get imgSrc(): string | null {

@@ -1,7 +1,9 @@
 import { Colors } from '../models/colors.enum';
 import { Pieces } from '../models/pieces.enum';
+import { BoardMap } from '../models/game-state.model';
 
-export const boardInitialPosition = new Map<number, [Pieces, Colors]>([
+export const boardInitialPosition: BoardMap
+  = new Map<number, [Pieces, Colors]>([
   [1, [Pieces.Rook, Colors.Black]],
   [2, [Pieces.Knight, Colors.Black]],
   [3, [Pieces.Bishop, Colors.Black]],

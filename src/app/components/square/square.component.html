@@ -1,14 +1,20 @@
 <div class="square"
      [ngClass]="({ rank, file } | squareColor).toLowerCase()"
      [class.selected]="isSelected"
+     [class.selectable]="isSelectable"
      (click)="onSquareClick()">
 
-  <div class="square-piece"
-       [class.selectable]="isActive"
+  <div class="piece"
        *ngIf="!!square">
     <img [src]='imgSrc'
          [alt]='imgAlt'
          draggable='false'>
   </div>
+
+  <div class="capture"
+       *ngIf="squareAction === moveActionsEnum.Capture"></div>
+
+  <div class="move"
+       *ngIf="squareAction === moveActionsEnum.Move"></div>
 
 </div>
