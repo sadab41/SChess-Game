@@ -33,12 +33,15 @@ export class GameService {
   }
 
   selectSquare(rank: number, file: number): void {
-    const { board, active } = this.gameStateSubject.value;
+    const { board, active, availableMoves } = this.gameStateSubject.value;
     const squareNum = squareNumber(rank, file);
 
     let square: { rank: number, file: number } | null = null;
 
-    if (board.has(squareNum) && board.get(squareNum)?.[1] === active) {
+    if (!!availableMoves?.length
+      && availableMoves.some(move => move.square === squareNum)) {
+      this.makeMove(board, active, squareNum);
+    } else if (board.has(squareNum) && board.get(squareNum)?.[1] === active) {
       square = { rank, file };
 
       this.calculateLegalMoves(board, rank, file, squareNum);
@@ -46,10 +49,7 @@ export class GameService {
       this.updateAvailableMoves([]);
     }
 
-    this.gameStateSubject.next({
-      ...this.gameStateSubject.value,
-      selectedSquare: square,
-    });
+    this.updateSelectedSquare(square);
   }
 
   getPieceInSquare$(square: number): Observable<[Pieces, Colors] | undefined>;
@@ -61,6 +61,41 @@ export class GameService {
 
     return this.gameStateSubject.asObservable()
       .pipe(map(({ board }) => board.get(square)));
+  }
+
+  private updateSelectedSquare(square: { rank: number, file: number } | null)
+    : void {
+    this.gameStateSubject.next({
+      ...this.gameStateSubject.value,
+      selectedSquare: square,
+    });
+  }
+
+  private updateAvailableMoves(moves: Move[]): void {
+    this.gameStateSubject.next({
+      ...this.gameStateSubject.value,
+      availableMoves: moves,
+    });
+  }
+
+  private makeMove(board: BoardMap, active: Colors, squareNum: number): void {
+    const selected = this.gameStateSubject.value.selectedSquare;
+
+    if (!!selected) {
+      const prevSquareNum = squareNumber(selected.rank, selected.file);
+      const square = board.get(prevSquareNum)!;
+      const newBoard = new Map(board);
+
+      newBoard.delete(squareNumber(selected.rank, selected.file));
+      newBoard.set(squareNum, square);
+
+      this.gameStateSubject.next({
+        ...this.gameStateSubject.value,
+        board: newBoard,
+        active: active === Colors.White ? Colors.Black : Colors.White,
+        availableMoves: [],
+      });
+    }
   }
 
   private calculateLegalMoves(board: BoardMap,
@@ -114,12 +149,5 @@ export class GameService {
     }
 
     this.updateAvailableMoves(moves);
-  }
-
-  private updateAvailableMoves(moves: Move[]): void {
-    this.gameStateSubject.next({
-      ...this.gameStateSubject.value,
-      availableMoves: moves,
-    });
   }
 }

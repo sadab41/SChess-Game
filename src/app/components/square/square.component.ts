@@ -17,7 +17,7 @@ export class SquareComponent implements OnInit {
   @Input() rank!: number;
   @Input() file!: number;
 
-  square!: [Pieces, Colors];
+  square!: [Pieces, Colors] | undefined;
   isActive!: boolean;
   isSelected!: boolean;
   squareAction!: MoveActions | undefined;
@@ -29,10 +29,7 @@ export class SquareComponent implements OnInit {
 
   ngOnInit(): void {
     const piece$ = this.gameService.getPieceInSquare$(this.rank, this.file)
-      .pipe(
-        filter(Boolean),
-        shareReplay(),
-      );
+      .pipe(shareReplay());
 
     piece$
       .subscribe(square => this.square = square);
@@ -41,7 +38,7 @@ export class SquareComponent implements OnInit {
       piece$,
       this.gameService.activeColor$,
     ])
-      .subscribe(([[, color], active]) => this.isActive = color === active);
+      .subscribe(([square, active]) => this.isActive = square?.[1] === active);
 
     this.gameService.selectedSquare$
       .subscribe(value => {
