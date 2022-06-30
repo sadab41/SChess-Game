@@ -128,6 +128,9 @@ export class GameService {
         const r = this.calculateRookMoves(board, rank, file, squareNum, color);
         moves = [...b, ...r];
         break;
+      case Pieces.King:
+        moves = this.calculateKingMoves(board, squareNum, color);
+        break;
     }
 
     this.gameStateSubject.next({
@@ -296,6 +299,27 @@ export class GameService {
 
         newSquareNum = newSquareNum + delta;
         newSquare = rankAndFile(newSquareNum);
+      }
+    });
+
+    return moves;
+  }
+
+  private calculateKingMoves(board: BoardMap,
+                             squareNum: number,
+                             color: Colors): Move[] {
+    const deltas = [-9, -8, -7, -1, 1, 7, 8, 9];
+
+    const moves: Move[] = [];
+
+    deltas.forEach(delta => {
+      const newSquareNum = squareNum + delta;
+      const square = board.get(newSquareNum);
+
+      if (!square) {
+        moves.push({ square: newSquareNum, action: MoveActions.Move });
+      } else if (square[1] !== color) {
+        moves.push({ square: newSquareNum, action: MoveActions.Capture });
       }
     });
 
