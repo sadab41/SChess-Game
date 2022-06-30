@@ -6,7 +6,11 @@ import { BoardMap, GameState } from '../models/game-state.model';
 import { Colors } from '../models/colors.enum';
 import { Pieces } from '../models/pieces.enum';
 import { Move, MoveActions } from '../models/move.model';
-import { boardInitialPosition, squareNumber } from '../utils/board';
+import {
+  boardInitialPosition,
+  rankAndFile,
+  squareNumber,
+} from '../utils/board';
 
 @Injectable({ providedIn: 'root' })
 export class GameService {
@@ -112,15 +116,18 @@ export class GameService {
 
     switch (piece) {
       case Pieces.Pawn:
-        this.hydratePawnLegalMove(board, rank, squareNum, color);
+        this.hydratePawnLegalMoves(board, rank, squareNum, color);
+        break;
+      case Pieces.Knight:
+        this.hydrateKnightLegalMoves(board, rank, file, squareNum, color);
         break;
     }
   }
 
-  private hydratePawnLegalMove(board: BoardMap,
-                               rank: number,
-                               squareNum: number,
-                               color: Colors): void {
+  private hydratePawnLegalMoves(board: BoardMap,
+                                rank: number,
+                                squareNum: number,
+                                color: Colors): void {
     const delta = color === Colors.White ? -8 : 8;
     const captureDelta = color === Colors.White ? [-7, -9] : [7, 9];
     const initialRank = color === Colors.White ? 7 : 2;
@@ -147,6 +154,34 @@ export class GameService {
         action: MoveActions.Capture,
       });
     }
+
+    this.updateAvailableMoves(moves);
+  }
+
+  private hydrateKnightLegalMoves(board: BoardMap,
+                                  rank: number,
+                                  file: number,
+                                  squareNum: number,
+                                  color: Colors): void {
+    const deltas = [-17, -15, -10, -6, 6, 10, 15, 17];
+    const moves: Move[] = [];
+
+    deltas.forEach(delta => {
+      const newSquareNum = squareNum + delta;
+      const newSquare = rankAndFile(newSquareNum);
+
+      if (!!newSquare
+        && Math.abs(newSquare.rank - rank) <= 2
+        && Math.abs(newSquare.file - file) <= 2) {
+        const square = board.get(newSquareNum);
+
+        if (!square) {
+          moves.push({ square: newSquareNum, action: MoveActions.Move });
+        } else if (square[1] !== color) {
+          moves.push({ square: newSquareNum, action: MoveActions.Capture });
+        }
+      }
+    });
 
     this.updateAvailableMoves(moves);
   }

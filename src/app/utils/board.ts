@@ -45,3 +45,15 @@ export function squareColor(rank: number, file: number): Colors {
 export function squareNumber(rank: number, file: number): number {
   return (rank - 1) * 8 + file;
 }
+
+export function rankAndFile(squareNum: number)
+  : { rank: number, file: number } | null {
+  for (let r = 1; r <= 8; r++) {
+    const f = squareNum + 8 - 8 * r;
+    if (f >= 1 && f <= 8 && Number.isInteger(f)) {
+      return { rank: r, file: f };
+    }
+  }
+
+  return null;
+}
