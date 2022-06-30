@@ -122,7 +122,10 @@ export class GameService {
         this.hydrateKnightLegalMoves(board, rank, file, squareNum, color);
         break;
       case Pieces.Bishop:
-        this.hydrateBishopLegalMoves(board, rank, file, squareNum, color);
+        this.hydrateBishopLegalMoves(board, file, squareNum, color);
+        break;
+      case Pieces.Rook:
+        this.hydrateRookLegalMoves(board, rank, file, squareNum, color);
         break;
     }
   }
@@ -190,7 +193,6 @@ export class GameService {
   }
 
   private hydrateBishopLegalMoves(board: BoardMap,
-                                  rank: number,
                                   file: number,
                                   squareNum: number,
                                   color: Colors): void {
@@ -217,6 +219,72 @@ export class GameService {
         }
 
         if (newSquare.file === 1 || newSquare.file === 8) {
+          break;
+        }
+
+        newSquareNum = newSquareNum + delta;
+        newSquare = rankAndFile(newSquareNum);
+      }
+    });
+
+    this.updateAvailableMoves(moves);
+  }
+
+  private hydrateRookLegalMoves(board: BoardMap,
+                                rank: number,
+                                file: number,
+                                squareNum: number,
+                                color: Colors): void {
+    const deltas: { delta: number, direction: 'n' | 's' | 'e' | 'w' }[] = [];
+
+    if (rank !== 1) {
+      deltas.push({ delta: -8, direction: 'n' });
+    }
+    if (rank !== 8) {
+      deltas.push({ delta: 8, direction: 's' });
+    }
+    if (file !== 1) {
+      deltas.push({ delta: -1, direction: 'w' });
+    }
+    if (file !== 8) {
+      deltas.push({ delta: 1, direction: 'e' });
+    }
+
+    const moves: Move[] = [];
+
+    deltas.forEach(({ delta, direction }) => {
+      let newSquareNum = squareNum + delta;
+      let newSquare = rankAndFile(newSquareNum);
+
+      while (!!newSquare) {
+        const square = board.get(newSquareNum);
+
+        if (!square) {
+          moves.push({ square: newSquareNum, action: MoveActions.Move });
+        } else if (square[1] !== color) {
+          moves.push({ square: newSquareNum, action: MoveActions.Capture });
+          break;
+        } else {
+          break;
+        }
+
+        let shouldBreak: boolean;
+        switch (direction) {
+          case 'n':
+            shouldBreak = newSquare.rank === 1;
+            break;
+          case 's':
+            shouldBreak = newSquare.rank === 8;
+            break;
+          case 'e':
+            shouldBreak = newSquare.file === 8;
+            break;
+          case 'w':
+            shouldBreak = newSquare.file === 1;
+            break;
+        }
+
+        if (shouldBreak) {
           break;
         }
 
