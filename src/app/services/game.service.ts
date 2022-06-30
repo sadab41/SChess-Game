@@ -53,7 +53,10 @@ export class GameService {
       this.updateAvailableMoves([]);
     }
 
-    this.updateSelectedSquare(square);
+    this.gameStateSubject.next({
+      ...this.gameStateSubject.value,
+      selectedSquare: square,
+    });
   }
 
   getPieceInSquare$(square: number): Observable<[Pieces, Colors] | undefined>;
@@ -65,14 +68,6 @@ export class GameService {
 
     return this.gameStateSubject.asObservable()
       .pipe(map(({ board }) => board.get(square)));
-  }
-
-  private updateSelectedSquare(square: { rank: number, file: number } | null)
-    : void {
-    this.gameStateSubject.next({
-      ...this.gameStateSubject.value,
-      selectedSquare: square,
-    });
   }
 
   private updateAvailableMoves(moves: Move[]): void {
@@ -113,27 +108,38 @@ export class GameService {
     }
 
     const [piece, color] = square;
+    let moves: Move[] = [];
 
     switch (piece) {
       case Pieces.Pawn:
-        this.hydratePawnLegalMoves(board, rank, squareNum, color);
+        moves = this.calculatePawnMoves(board, rank, squareNum, color);
         break;
       case Pieces.Knight:
-        this.hydrateKnightLegalMoves(board, rank, file, squareNum, color);
+        moves = this.calculateKnightMoves(board, rank, file, squareNum, color);
         break;
       case Pieces.Bishop:
-        this.hydrateBishopLegalMoves(board, file, squareNum, color);
+        moves = this.calculateBishopMoves(board, file, squareNum, color);
         break;
       case Pieces.Rook:
-        this.hydrateRookLegalMoves(board, rank, file, squareNum, color);
+        moves = this.calculateRookMoves(board, rank, file, squareNum, color);
+        break;
+      case Pieces.Queen:
+        const b = this.calculateBishopMoves(board, file, squareNum, color);
+        const r = this.calculateRookMoves(board, rank, file, squareNum, color);
+        moves = [...b, ...r];
         break;
     }
+
+    this.gameStateSubject.next({
+      ...this.gameStateSubject.value,
+      availableMoves: moves,
+    });
   }
 
-  private hydratePawnLegalMoves(board: BoardMap,
-                                rank: number,
-                                squareNum: number,
-                                color: Colors): void {
+  private calculatePawnMoves(board: BoardMap,
+                             rank: number,
+                             squareNum: number,
+                             color: Colors): Move[] {
     const delta = color === Colors.White ? -8 : 8;
     const captureDelta = color === Colors.White ? [-7, -9] : [7, 9];
     const initialRank = color === Colors.White ? 7 : 2;
@@ -161,14 +167,14 @@ export class GameService {
       });
     }
 
-    this.updateAvailableMoves(moves);
+    return moves;
   }
 
-  private hydrateKnightLegalMoves(board: BoardMap,
-                                  rank: number,
-                                  file: number,
-                                  squareNum: number,
-                                  color: Colors): void {
+  private calculateKnightMoves(board: BoardMap,
+                               rank: number,
+                               file: number,
+                               squareNum: number,
+                               color: Colors): Move[] {
     const deltas = [-17, -15, -10, -6, 6, 10, 15, 17];
     const moves: Move[] = [];
 
@@ -189,16 +195,16 @@ export class GameService {
       }
     });
 
-    this.updateAvailableMoves(moves);
+    return moves;
   }
 
-  private hydrateBishopLegalMoves(board: BoardMap,
-                                  file: number,
-                                  squareNum: number,
-                                  color: Colors): void {
+  private calculateBishopMoves(board: BoardMap,
+                               file: number,
+                               squareNum: number,
+                               color: Colors): Move[] {
     const deltas = [
-      ...(file !== 1 ? [-7, 7] : []),
-      ...(file !== 8 ? [-9, 9] : []),
+      ...(file !== 1 ? [-9, 7] : []),
+      ...(file !== 8 ? [-7, 9] : []),
     ];
     const moves: Move[] = [];
 
@@ -227,14 +233,14 @@ export class GameService {
       }
     });
 
-    this.updateAvailableMoves(moves);
+    return moves;
   }
 
-  private hydrateRookLegalMoves(board: BoardMap,
-                                rank: number,
-                                file: number,
-                                squareNum: number,
-                                color: Colors): void {
+  private calculateRookMoves(board: BoardMap,
+                             rank: number,
+                             file: number,
+                             squareNum: number,
+                             color: Colors): Move[] {
     const deltas: { delta: number, direction: 'n' | 's' | 'e' | 'w' }[] = [];
 
     if (rank !== 1) {
@@ -293,6 +299,6 @@ export class GameService {
       }
     });
 
-    this.updateAvailableMoves(moves);
+    return moves;
   }
 }
