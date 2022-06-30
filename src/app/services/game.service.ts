@@ -121,6 +121,9 @@ export class GameService {
       case Pieces.Knight:
         this.hydrateKnightLegalMoves(board, rank, file, squareNum, color);
         break;
+      case Pieces.Bishop:
+        this.hydrateBishopLegalMoves(board, rank, file, squareNum, color);
+        break;
     }
   }
 
@@ -180,6 +183,45 @@ export class GameService {
         } else if (square[1] !== color) {
           moves.push({ square: newSquareNum, action: MoveActions.Capture });
         }
+      }
+    });
+
+    this.updateAvailableMoves(moves);
+  }
+
+  private hydrateBishopLegalMoves(board: BoardMap,
+                                  rank: number,
+                                  file: number,
+                                  squareNum: number,
+                                  color: Colors): void {
+    const deltas = [
+      ...(file !== 1 ? [-7, 7] : []),
+      ...(file !== 8 ? [-9, 9] : []),
+    ];
+    const moves: Move[] = [];
+
+    deltas.forEach(delta => {
+      let newSquareNum = squareNum + delta;
+      let newSquare = rankAndFile(newSquareNum);
+
+      while (!!newSquare) {
+        const square = board.get(newSquareNum);
+
+        if (!square) {
+          moves.push({ square: newSquareNum, action: MoveActions.Move });
+        } else if (square[1] !== color) {
+          moves.push({ square: newSquareNum, action: MoveActions.Capture });
+          break;
+        } else {
+          break;
+        }
+
+        if (newSquare.file === 1 || newSquare.file === 8) {
+          break;
+        }
+
+        newSquareNum = newSquareNum + delta;
+        newSquare = rankAndFile(newSquareNum);
       }
     });
 
