@@ -18,6 +18,7 @@ export class GameService {
     board: boardInitialPosition,
     active: Colors.White,
     availableMoves: [],
+    history: [],
   });
 
   get activeColor$(): Observable<Colors> {
@@ -44,7 +45,9 @@ export class GameService {
 
     if (!!availableMoves?.length
       && availableMoves.some(move => move.square === squareNum)) {
-      this.makeMove(board, active, squareNum);
+      const { action } = availableMoves
+        .find(move => move.square === squareNum)!;
+      this.makeMove(board, active, squareNum, action);
     } else if (board.has(squareNum) && board.get(squareNum)?.[1] === active) {
       square = { rank, file };
 
@@ -59,12 +62,9 @@ export class GameService {
     });
   }
 
-  getPieceInSquare$(square: number): Observable<[Pieces, Colors] | undefined>;
   getPieceInSquare$(rank: number, file: number)
-    : Observable<[Pieces, Colors] | undefined>;
-  getPieceInSquare$(a: number, b?: number)
     : Observable<[Pieces, Colors] | undefined> {
-    const square = !!b ? squareNumber(a, b) : a;
+    const square = squareNumber(rank, file);
 
     return this.gameStateSubject.asObservable()
       .pipe(map(({ board }) => board.get(square)));
@@ -77,24 +77,34 @@ export class GameService {
     });
   }
 
-  private makeMove(board: BoardMap, active: Colors, squareNum: number): void {
-    const selected = this.gameStateSubject.value.selectedSquare;
+  private makeMove(board: BoardMap,
+                   active: Colors,
+                   squareNum: number,
+                   action: MoveActions): void {
+    const { rank, file } = this.gameStateSubject.value.selectedSquare!;
+    const prevSquareNum = squareNumber(rank, file);
+    const square = board.get(prevSquareNum)!;
+    const newBoard = new Map(board);
 
-    if (!!selected) {
-      const prevSquareNum = squareNumber(selected.rank, selected.file);
-      const square = board.get(prevSquareNum)!;
-      const newBoard = new Map(board);
+    newBoard.delete(squareNumber(rank, file));
+    newBoard.set(squareNum, square);
 
-      newBoard.delete(squareNumber(selected.rank, selected.file));
-      newBoard.set(squareNum, square);
+    const { history } = this.gameStateSubject.value;
+    const last = history[history.length - 1];
+    history.push({
+      count: !!last ? last.count + 1 : 1,
+      from: prevSquareNum,
+      to: squareNum,
+      action,
+    });
 
-      this.gameStateSubject.next({
-        ...this.gameStateSubject.value,
-        board: newBoard,
-        active: active === Colors.White ? Colors.Black : Colors.White,
-        availableMoves: [],
-      });
-    }
+    this.gameStateSubject.next({
+      ...this.gameStateSubject.value,
+      board: newBoard,
+      active: active === Colors.White ? Colors.Black : Colors.White,
+      availableMoves: [],
+      history,
+    });
   }
 
   private calculateLegalMoves(board: BoardMap,
