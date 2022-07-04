@@ -62,6 +62,7 @@ export class SquareComponent implements OnInit {
   get isSelectable(): boolean {
     return this.isActive
       || this.squareAction === MoveActions.Capture
+      || this.squareAction === MoveActions.EnPassant
       || this.squareAction === MoveActions.Move;
   }
 
@@ -84,6 +85,11 @@ export class SquareComponent implements OnInit {
     const [piece, color] = this.square;
 
     return `${piece} ${color}`;
+  }
+
+  get isCapture(): boolean {
+    return this.squareAction === MoveActions.Capture
+      || this.squareAction === MoveActions.EnPassant;
   }
 
   onSquareClick(): void {

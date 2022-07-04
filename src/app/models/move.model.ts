@@ -13,5 +13,5 @@ export interface HistoryMove {
 export enum MoveActions {
   Move = 'Move',
   Capture = 'Capture',
-  Check = 'Check',
+  EnPassant = 'EnPassant',
 }
