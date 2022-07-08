@@ -265,17 +265,70 @@ function calculateQueenMoves(board: BoardMap,
 }
 
 function calculateKingMoves(board: BoardMap,
+                            history: HistoryMove[],
                             color: Colors,
                             rank: number,
                             file: number,
                             squareNum: number): Move[] {
   const b = calculateBishopMoves(board, color, rank, file, squareNum, true);
   const r = calculateRookMoves(board, color, rank, file, squareNum, true);
+  const moves = [...b, ...r];
 
-  return [...b, ...r];
+  const isWhite = color === Colors.White;
+  const inBetweenShortSquareNums = isWhite ? [62, 63] : [6, 7];
+  const inBetweenLongSquareNums = isWhite ? [58, 59, 60] : [2, 3, 4];
+
+  const canShortCastle = inBetweenShortSquareNums.every(b => !board.get(b))
+    && history.every(entry => {
+      const kingSquareNum = isWhite ? 61 : 5;
+      const rookSquareNum = isWhite ? 64 : 8;
+
+      const supposedKingSquare = entry.state.get(kingSquareNum);
+      const kingOk = !!supposedKingSquare
+        && supposedKingSquare[0] === Pieces.King
+        && supposedKingSquare[1] === color;
+      const supposedRookSquare = entry.state.get(rookSquareNum);
+      const rookOk = !!supposedRookSquare
+        && supposedRookSquare[0] === Pieces.Rook
+        && supposedRookSquare[1] === color;
+
+      return kingOk && rookOk;
+    });
+  const canLongCastle = inBetweenLongSquareNums.every(b => !board.get(b))
+    && history.every(entry => {
+    const kingSquareNum = isWhite ? 61 : 5;
+    const rookSquareNum = isWhite ? 57 : 1;
+
+    const supposedKingSquare = entry.state.get(kingSquareNum);
+    const kingOk = !!supposedKingSquare
+      && supposedKingSquare[0] === Pieces.King
+      && supposedKingSquare[1] === color;
+    const supposedRookSquare = entry.state.get(rookSquareNum);
+    const rookOk = !!supposedRookSquare
+      && supposedRookSquare[0] === Pieces.Rook
+      && supposedRookSquare[1] === color;
+
+    return kingOk && rookOk;
+  });
+
+  if (canShortCastle) {
+    moves.push({
+      square: isWhite ? 63 : 7,
+      action: MoveActions.ShortCastle,
+    });
+  }
+  if (canLongCastle) {
+    moves.push({
+      square: isWhite ? 59 : 3,
+      action: MoveActions.LongCastle,
+    });
+  }
+
+  return moves;
 }
 
 function filterPseudoLegalMoves(board: BoardMap,
+                                history: HistoryMove[],
                                 color: Colors,
                                 moves: Move[],
                                 toMoveSquare: { rank: number, file: number })
@@ -283,10 +336,10 @@ function filterPseudoLegalMoves(board: BoardMap,
   const oppositeColor = color === Colors.White ? Colors.Black : Colors.White;
 
   return moves.filter(move => {
-    const { board: newBoard } = makeMove(
+    const { board: newBoard, entry } = makeMove(
       board,
       [move],
-      [],
+      history,
       color,
       move.square,
       toMoveSquare,
@@ -302,20 +355,23 @@ function filterPseudoLegalMoves(board: BoardMap,
     let isIllegal = false;
     for (const [key, square] of newBoard) {
       if (!!square && square?.[1] === oppositeColor) {
-        if (key < 1 || key > 64) {
-          console.log(key, square);
-        }
-
         const { rank, file } = rankAndFile(key)!;
         const aheadMoves = calculateLegalMoves(
           newBoard,
-          [],
+          [...history, entry],
           rank,
           file,
           false,
         );
 
-        if (aheadMoves.some(aheadMove => aheadMove.square === kingSquareNum)) {
+        const isCastle = move.action === MoveActions.ShortCastle
+          || move.action === MoveActions.LongCastle;
+        const castleDelta = move.action === MoveActions.ShortCastle ? -1 : 1;
+        const catchesKingMidwayCastle = aheadMoves
+          .some(aheadMove => aheadMove.square === kingSquareNum + castleDelta);
+
+        if (aheadMoves.some(aheadMove => aheadMove.square === kingSquareNum)
+          || (isCastle && catchesKingMidwayCastle)) {
           isIllegal = true;
         }
       }
@@ -352,12 +408,18 @@ export function calculateLegalMoves(board: BoardMap,
       moves = calculateQueenMoves(board, color, rank, file, squareNum);
       break;
     case Pieces.King:
-      moves = calculateKingMoves(board, color, rank, file, squareNum);
+      moves = calculateKingMoves(board, history, color, rank, file, squareNum);
       break;
   }
 
   if (fullDepth) {
-    moves = filterPseudoLegalMoves(board, color, moves, { rank, file });
+    moves = filterPseudoLegalMoves(
+      board,
+      history,
+      color,
+      moves,
+      { rank, file },
+    );
   }
 
   return moves;
@@ -370,8 +432,10 @@ export function makeMove(board: BoardMap,
                          toMoveSquareNum: number,
                          prevSelectedSquare: { rank: number, file: number })
   : { board: BoardMap, entry: HistoryMove } {
-  const prevSquare
-    = squareNumber(prevSelectedSquare.rank, prevSelectedSquare.file);
+  const prevSquare = squareNumber(
+    prevSelectedSquare.rank,
+    prevSelectedSquare.file,
+  );
   const { action } = availableMoves
     .find(move => move.square === toMoveSquareNum)!;
 
@@ -380,9 +444,26 @@ export function makeMove(board: BoardMap,
   newBoard.delete(prevSquare);
   newBoard.set(toMoveSquareNum, board.get(prevSquare)!);
 
-  if (action === MoveActions.EnPassant) {
-    const delta = color === Colors.White ? 8 : -8;
-    newBoard.delete(toMoveSquareNum + delta);
+  switch (action) {
+    case MoveActions.EnPassant: {
+      const delta = color === Colors.White ? 8 : -8;
+      newBoard.delete(toMoveSquareNum + delta);
+      break;
+    }
+    case MoveActions.ShortCastle: {
+      const rookSquareNum = color === Colors.White ? 64 : 8;
+      const rook = newBoard.get(rookSquareNum)!;
+      newBoard.set(rookSquareNum - 2, rook);
+      newBoard.delete(rookSquareNum);
+      break;
+    }
+    case MoveActions.LongCastle: {
+      const rookSquareNum = color === Colors.White ? 57 : 1;
+      const rook = newBoard.get(rookSquareNum)!;
+      newBoard.set(rookSquareNum + 3, rook);
+      newBoard.delete(rookSquareNum);
+      break;
+    }
   }
 
   const last = history[history.length - 1];
@@ -391,6 +472,7 @@ export function makeMove(board: BoardMap,
     from: prevSquare,
     to: toMoveSquareNum,
     action,
+    state: newBoard,
   };
 
   return { board: newBoard, entry };

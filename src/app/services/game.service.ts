@@ -5,7 +5,7 @@ import { BehaviorSubject, map, Observable, pluck } from 'rxjs';
 import { GameState } from '../models/game-state.model';
 import { Colors } from '../models/colors.enum';
 import { Pieces } from '../models/pieces.enum';
-import { Move } from '../models/move.model';
+import { Move, MoveActions } from '../models/move.model';
 import { boardInitialPosition, squareNumber } from '../utils/board';
 import { calculateLegalMoves, makeMove } from '../utils/moves';
 
@@ -14,7 +14,13 @@ export class GameService {
   private gameStateSubject = new BehaviorSubject<GameState>({
     board: boardInitialPosition,
     active: Colors.White,
-    history: [],
+    history: [{
+      count: 0,
+      from: 0,
+      to: 0,
+      action: null as unknown as MoveActions,
+      state: boardInitialPosition,
+    }],
     availableMoves: [],
   });
 

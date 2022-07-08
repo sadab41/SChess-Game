@@ -1,6 +1,6 @@
 import { Component, Input, OnInit } from '@angular/core';
 
-import { combineLatest, filter, shareReplay } from 'rxjs';
+import { combineLatest, shareReplay } from 'rxjs';
 
 import { GameService } from '../../services/game.service';
 import { Colors } from '../../models/colors.enum';
@@ -60,10 +60,7 @@ export class SquareComponent implements OnInit {
   }
 
   get isSelectable(): boolean {
-    return this.isActive
-      || this.squareAction === MoveActions.Capture
-      || this.squareAction === MoveActions.EnPassant
-      || this.squareAction === MoveActions.Move;
+    return this.isActive || !!this.squareAction;
   }
 
   get imgSrc(): string | null {
@@ -90,6 +87,12 @@ export class SquareComponent implements OnInit {
   get isCapture(): boolean {
     return this.squareAction === MoveActions.Capture
       || this.squareAction === MoveActions.EnPassant;
+  }
+
+  get isMove(): boolean {
+    return this.squareAction === MoveActions.Move
+      || this.squareAction === MoveActions.ShortCastle
+      || this.squareAction === MoveActions.LongCastle;
   }
 
   onSquareClick(): void {
