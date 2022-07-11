@@ -81,7 +81,7 @@ export class SquareComponent implements OnInit {
 
     const [piece, color] = this.square;
 
-    return `${piece} ${color}`;
+    return `${ piece } ${ color }`;
   }
 
   get isCapture(): boolean {

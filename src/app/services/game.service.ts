@@ -1,13 +1,17 @@
 import { Injectable } from '@angular/core';
+import { Dialog } from '@angular/cdk/dialog';
 
 import { BehaviorSubject, map, Observable, pluck } from 'rxjs';
 
-import { GameState } from '../models/game-state.model';
+import { BoardMap, GameState } from '../models/game-state.model';
 import { Colors } from '../models/colors.enum';
 import { Pieces } from '../models/pieces.enum';
 import { Move, MoveActions } from '../models/move.model';
+import {
+  PromoteDialogComponent,
+} from '../components/promote-dialog/promote-dialog.component';
 import { boardInitialPosition, squareNumber } from '../utils/board';
-import { calculateLegalMoves, makeMove } from '../utils/moves';
+import { calculateLegalMoves, makeMove, promote } from '../utils/moves';
 
 @Injectable({ providedIn: 'root' })
 export class GameService {
@@ -23,6 +27,9 @@ export class GameService {
     }],
     availableMoves: [],
   });
+
+  constructor(private dialog: Dialog) {
+  }
 
   get activeColor$(): Observable<Colors> {
     return this.gameStateSubject.asObservable()
@@ -59,6 +66,47 @@ export class GameService {
     const squareNum = squareNumber(rank, file);
 
     if (availableMoves.some(move => move.square === squareNum)) {
+      const isPawnPromoting = this.checkIsPawnPromoting(
+        board,
+        squareNumber(selectedSquare!.rank, selectedSquare!.file),
+        squareNum,
+      );
+      if (isPawnPromoting) {
+        const dialog = this.dialog.open<Pieces>(
+          PromoteDialogComponent,
+          {
+            disableClose: true,
+            data: {
+              color: active,
+            },
+          },
+        );
+
+        dialog.closed
+          .subscribe(piece => {
+            const {
+              board,
+              active,
+              history,
+            } = this.gameStateSubject.value;
+
+            const { board: newBoard, entry } = promote(
+              board,
+              history,
+              squareNum,
+              piece!,
+            );
+
+            this.gameStateSubject.next({
+              board: newBoard,
+              active,
+              history: [...history, entry],
+              availableMoves: [],
+              selectedSquare: null,
+            });
+          });
+      }
+
       const { board: newBoard, entry } = makeMove(
         board,
         availableMoves,
@@ -86,5 +134,13 @@ export class GameService {
       availableMoves,
       selectedSquare,
     });
+  }
+
+  private checkIsPawnPromoting(board: BoardMap,
+                               selectedSquareNum: number,
+                               toSelectSquareNum: number): boolean {
+    return ((toSelectSquareNum >= 1 && toSelectSquareNum <= 8)
+      || (toSelectSquareNum >= 57 && toSelectSquareNum <= 64))
+      && board.get(selectedSquareNum)?.[0] === Pieces.Pawn;
   }
 }

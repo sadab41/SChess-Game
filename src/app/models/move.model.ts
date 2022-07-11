@@ -19,4 +19,5 @@ export enum MoveActions {
   EnPassant = 'EnPassant',
   ShortCastle = 'ShortCastle',
   LongCastle = 'LongCastle',
+  Promote = 'Promote',
 }

@@ -11,6 +11,22 @@ enum Directions {
   West,
 }
 
+function generateHistoryMoveEntry(history: HistoryMove[],
+                                  board: BoardMap,
+                                  from: number,
+                                  to: number,
+                                  action: MoveActions): HistoryMove {
+  const last = history[history.length - 1];
+
+  return {
+    count: !!last ? last.count + 1 : 1,
+    from,
+    to,
+    action,
+    state: board,
+  };
+}
+
 function calculatePawnMoves(board: BoardMap,
                             history: HistoryMove[],
                             color: Colors,
@@ -466,14 +482,33 @@ export function makeMove(board: BoardMap,
     }
   }
 
-  const last = history[history.length - 1];
-  const entry: HistoryMove = {
-    count: !!last ? last.count + 1 : 1,
-    from: prevSquare,
-    to: toMoveSquareNum,
+  const entry = generateHistoryMoveEntry(
+    history,
+    newBoard,
+    prevSquare,
+    toMoveSquareNum,
     action,
-    state: newBoard,
-  };
+  );
+
+  return { board: newBoard, entry };
+}
+
+export function promote(board: BoardMap,
+                        history: HistoryMove[],
+                        squareNum: number,
+                        piece: Pieces)
+  : { board: BoardMap, entry: HistoryMove } {
+  const newBoard = new Map(board);
+
+  newBoard.set(squareNum, [piece, newBoard.get(squareNum)![1]]);
+
+  const entry = generateHistoryMoveEntry(
+    history,
+    newBoard,
+    squareNum,
+    squareNum,
+    MoveActions.Promote,
+  );
 
   return { board: newBoard, entry };
 }
