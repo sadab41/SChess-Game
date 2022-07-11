@@ -119,6 +119,7 @@ export class GameService {
       history = [...history, entry];
       active = active === Colors.White ? Colors.Black : Colors.White;
       availableMoves = [];
+      selectedSquare = null;
     } else if (board.get(squareNum)?.[1] === active) {
       selectedSquare = { rank, file };
       availableMoves = calculateLegalMoves(board, history, rank, file);
