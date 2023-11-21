@@ -15,7 +15,7 @@ export class PromoteDialogComponent {
   private readonly color: Colors;
 
   constructor(private dialogRef: DialogRef<Pieces>,
-              @Inject(DIALOG_DATA) private data: { color: Colors }) {
+    @Inject(DIALOG_DATA) private data: { color: Colors }) {
     this.color = data.color;
   }
 
@@ -24,10 +24,10 @@ export class PromoteDialogComponent {
   }
 
   getImageSrc(piece: Pieces): string {
-    return `assets/icons/pieces/${ piece }-${ this.color }.svg`.toLowerCase();
+    return `assets/icons/pieces/${piece}-${this.color}.svg`.toLowerCase();
   }
 
   getImageAlt(piece: Pieces): string {
-    return `${ piece } ${ this.color }`;
+    return `${piece} ${this.color}`;
   }
 }

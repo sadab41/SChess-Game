@@ -138,10 +138,10 @@ export class GameService {
   }
 
   private checkIsPawnPromoting(board: BoardMap,
-                               selectedSquareNum: number,
-                               toSelectSquareNum: number): boolean {
+    selectedSquareNum: number,
+    toSelectSquareNum: number): boolean {
     return ((toSelectSquareNum >= 1 && toSelectSquareNum <= 8)
       || (toSelectSquareNum >= 57 && toSelectSquareNum <= 64))
-      && board.get(selectedSquareNum)?.[0] === Pieces.Pawn;
+    // && board.get(selectedSquareNum)?.[0] === Pieces.Pawn;
   }
 }

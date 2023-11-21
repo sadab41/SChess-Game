@@ -8,7 +8,6 @@ export interface GameState {
   board: BoardMap;
   active: Colors;
   history: HistoryMove[];
-
   availableMoves: Move[];
 
   selectedSquare?: { rank: number, file: number } | null;

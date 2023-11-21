@@ -20,7 +20,9 @@
     &.selected {
       background-color: main.$light-selected;
     }
+
   }
+
 
   &.black {
     background-color: main.$dark;
@@ -30,7 +32,7 @@
     }
   }
 
-  > .piece {
+  >.piece {
     width: 100%;
     height: 100%;
 
@@ -39,14 +41,15 @@
     align-items: center;
   }
 
-  > .move, > .capture {
+  >.move,
+  >.capture {
     position: absolute;
     border-radius: 100%;
     opacity: 0.6;
     pointer-events: none;
   }
 
-  > .capture {
+  >.capture {
     width: 40px;
     height: 40px;
 
@@ -54,10 +57,19 @@
     border: 6px solid white;
   }
 
-  > .move {
-    width: 16px;
-    height: 16px;
-
-    background-color: white;
+  >.move {
+    width: 60px;
+    height: 60px;
+    border-radius: 0;
+    background-color: #27069f;
   }
+}
+
+.white:hover  {
+  background-color: lightskyblue;
+}
+
+.black:hover {
+  background-color: lightskyblue;
+
 }
