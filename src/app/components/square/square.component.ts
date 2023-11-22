@@ -9,7 +9,7 @@ import { MoveActions } from '../../models/move.model';
 import { squareNumber } from '../../utils/board';
 
 @Component({
-  selector: 'jv-square',
+  selector: 'app-square',
   templateUrl: './square.component.html',
   styleUrls: ['./square.component.scss'],
 })

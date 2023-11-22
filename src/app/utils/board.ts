@@ -8,7 +8,7 @@ export const boardInitialPosition: BoardMap
     [6, [Pieces.Bishop, Colors.Black]],
     [59, [Pieces.Bishop, Colors.White]],
     [62, [Pieces.Bishop, Colors.White]],
-]);
+  ]);
 
 export function squareColor(rank: number, file: number): Colors {
   return (file + rank) % 2 === 0 ? Colors.White : Colors.Black;

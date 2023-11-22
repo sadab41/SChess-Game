@@ -7,9 +7,7 @@ import { BoardMap, GameState } from '../models/game-state.model';
 import { Colors } from '../models/colors.enum';
 import { Pieces } from '../models/pieces.enum';
 import { Move, MoveActions } from '../models/move.model';
-import {
-  PromoteDialogComponent,
-} from '../components/promote-dialog/promote-dialog.component';
+import { PromoteDialogComponent, } from '../components/promote-dialog/promote-dialog.component';
 import { boardInitialPosition, squareNumber } from '../utils/board';
 import { calculateLegalMoves, makeMove, promote } from '../utils/moves';
 
@@ -42,7 +40,7 @@ export class GameService {
   }
 
   get selectedSquare$()
-    : Observable<{ rank: number, file: number } | null | undefined> {
+    : Observable<{ rank: number, file: number } | null | any> {
     return this.gameStateSubject.asObservable()
       .pipe(pluck('selectedSquare'));
   }
@@ -66,12 +64,12 @@ export class GameService {
     const squareNum = squareNumber(rank, file);
 
     if (availableMoves.some(move => move.square === squareNum)) {
-      const isPawnPromoting = this.checkIsPawnPromoting(
+      const issadabPromoting = this.checkIssadabPromoting(
         board,
         squareNumber(selectedSquare!.rank, selectedSquare!.file),
         squareNum,
       );
-      if (isPawnPromoting) {
+      if (issadabPromoting) {
         const dialog = this.dialog.open<Pieces>(
           PromoteDialogComponent,
           {
@@ -137,11 +135,10 @@ export class GameService {
     });
   }
 
-  private checkIsPawnPromoting(board: BoardMap,
+  private checkIssadabPromoting(board: BoardMap,
     selectedSquareNum: number,
     toSelectSquareNum: number): boolean {
     return ((toSelectSquareNum >= 1 && toSelectSquareNum <= 8)
       || (toSelectSquareNum >= 57 && toSelectSquareNum <= 64))
-    // && board.get(selectedSquareNum)?.[0] === Pieces.Pawn;
   }
 }

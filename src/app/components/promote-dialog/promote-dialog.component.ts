@@ -5,7 +5,7 @@ import { Pieces } from '../../models/pieces.enum';
 import { Colors } from '../../models/colors.enum';
 
 @Component({
-  selector: 'jv-promote-dialog',
+  selector: 'app-promote-dialog',
   templateUrl: './promote-dialog.component.html',
   styleUrls: ['./promote-dialog.component.scss'],
 })
