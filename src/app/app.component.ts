@@ -1,7 +1,7 @@
 import { Component } from '@angular/core';
 
 @Component({
-  selector: 'jv-root',
+  selector: 'sadab-root',
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.scss'],
 })
